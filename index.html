@@ -1,103 +1,139 @@
-<script>
-window.onload = function() {
-  const PRIZE_LINK = "https://drive.google.com/file/d/1drk9tt4fSFeYoK0IbczhLP-RW0G4pYSe/view?usp=sharing";
-  const WIN_LINES = 10;
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tetris Prize Challenge</title>
+  <style>
+    body { margin:0; background:#071129; color:#fff; font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh;}
+    canvas { background:#071129; display:block; }
+    #hud { position:absolute; top:10px; left:10px; }
+    button { margin:5px; }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="300" height="600"></canvas>
+  <div id="hud">
+    <div>Score: <span id="score">0</span></div>
+    <div>Lines: <span id="lines">0</span></div>
+    <button id="startBtn">Start</button>
+  </div>
 
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  const scale = 30;
-  const cols = 10;
-  const rows = 20;
+  <script>
+    window.onload = function() {
+      const PRIZE_LINK = "https://drive.google.com/file/d/1drk9tt4fSFeYoK0IbczhLP-RW0G4pYSe/view?usp=sharing";
+      const WIN_LINES = 10;
 
-  canvas.width = cols * scale;
-  canvas.height = rows * scale;
+      const canvas = document.getElementById('game');
+      const ctx = canvas.getContext('2d');
+      const scoreEl = document.getElementById('score');
+      const linesEl = document.getElementById('lines');
 
-  const scoreEl = document.getElementById('score');
-  const linesEl = document.getElementById('lines');
-  const levelEl = document.getElementById('level');
-  const statusEl = document.getElementById('status');
-  const modalBackdrop = document.getElementById('modal');
+      const scale = 30, cols = 10, rows = 20;
+      canvas.width = cols * scale;
+      canvas.height = rows * scale;
 
-  let grid = createMatrix(cols, rows);
-  let current = null;
-  let dropCounter = 0;
-  let dropInterval = 800;
-  let lastTime = 0;
-  let score = 0;
-  let lines = 0;
-  let level = 1;
-  let running = false;
+      let grid = Array.from({length: rows}, () => Array(cols).fill(0));
+      let current = null;
+      let dropCounter = 0, dropInterval = 800, lastTime = 0;
+      let score = 0, lines = 0, running = false;
 
-  const tetrominoes = {
-    I: [[1,1,1,1]],
-    J: [[2,0,0],[2,2,2]],
-    L: [[0,0,3],[3,3,3]],
-    O: [[4,4],[4,4]],
-    S: [[0,5,5],[5,5,0]],
-    T: [[0,6,0],[6,6,6]],
-    Z: [[7,7,0],[0,7,7]]
-  };
+      const tetrominoes = {
+        I:[[1,1,1,1]], J:[[2,0,0],[2,2,2]], L:[[0,0,3],[3,3,3]],
+        O:[[4,4],[4,4]], S:[[0,5,5],[5,5,0]], T:[[0,6,0],[6,6,6]],
+        Z:[[7,7,0],[0,7,7]]
+      };
+      const colors = [null,"#00f0f0","#0000f0","#f0a000","#f0f000","#00f000","#a000f0","#f00000"];
 
-  const colors = [null,"#00f0f0","#0000f0","#f0a000","#f0f000","#00f000","#a000f0","#f00000"];
+      function createPiece(type){ return tetrominoes[type].map(r => r.slice()); }
+      function collide(grid,piece,offset){ 
+        for(let y=0;y<piece.length;y++) for(let x=0;x<piece[y].length;x++) 
+          if(piece[y][x]!==0 && (grid[y+offset.y] && grid[y+offset.y][x+offset.x])!==0) return true;
+        return false;
+      }
+      function merge(grid,piece,offset){
+        for(let y=0;y<piece.length;y++) for(let x=0;x<piece[y].length;x++)
+          if(piece[y][x]!==0) grid[y+offset.y][x+offset.x]=piece[y][x];
+      }
+      function rotate(matrix,dir){
+        for(let y=0;y<matrix.length;y++) for(let x=0;x<y;x++)
+          [matrix[x][y],matrix[y][x]]=[matrix[y][x],matrix[x][y]];
+        if(dir>0) matrix.forEach(r=>r.reverse()); else matrix.reverse();
+      }
 
-  function createMatrix(w, h){
-    const m = [];
-    for(let y=0; y<h; y++) m.push(new Array(w).fill(0));
-    return m;
-  }
+      function playerDrop(){
+        current.pos.y++;
+        if(collide(grid,current.matrix,current.pos)){
+          current.pos.y--;
+          merge(grid,current.matrix,current.pos);
+          sweepLines();
+          spawnPiece();
+          if(collide(grid,current.matrix,current.pos)) running=false;
+        }
+        dropCounter=0;
+      }
 
-  function createPiece(type){
-    return tetrominoes[type].map(r => r.slice());
-  }
-
-  function collide(grid, piece, offset){
-    for(let y=0; y<piece.length; y++){
-      for(let x=0; x<piece[y].length; x++){
-        if(piece[y][x] !== 0 &&
-          (grid[y+offset.y] && grid[y+offset.y][x+offset.x]) !== 0){
-          return true;
+      function sweepLines(){
+        let rowCount=0;
+        outer: for(let y=rows-1;y>=0;y--){
+          for(let x=0;x<cols;x++) if(grid[y][x]===0) continue outer;
+          grid.splice(y,1); grid.unshift(Array(cols).fill(0)); y++; rowCount++;
+        }
+        if(rowCount>0){
+          lines+=rowCount;
+          score+=rowCount*100;
+          updateHUD();
+          if(lines>=WIN_LINES){ running=false; setTimeout(()=>window.open(PRIZE_LINK,"_blank"),50); alert("You win! Prize opened."); }
         }
       }
-    }
-    return false;
-  }
 
-  function merge(grid, piece, offset){
-    for(let y=0; y<piece.length; y++){
-      for(let x=0; x<piece[y].length; x++){
-        if(piece[y][x] !== 0){
-          grid[y+offset.y][x+offset.x] = piece[y][x];
+      function spawnPiece(){
+        const types="IJLOSTZ";
+        const t=types[Math.floor(Math.random()*types.length)];
+        current={ matrix:createPiece(t), pos:{x:Math.floor(cols/2)-1,y:0} };
+      }
+
+      function updateHUD(){ scoreEl.textContent=score; linesEl.textContent=lines; }
+
+      function draw(){
+        ctx.fillStyle="#071129"; ctx.fillRect(0,0,canvas.width,canvas.height);
+        for(let y=0;y<rows;y++) for(let x=0;x<cols;x++){
+          if(grid[y][x]) { ctx.fillStyle=colors[grid[y][x]]; ctx.fillRect(x*scale,y*scale,scale-1,scale-1); }
+        }
+        if(current){
+          for(let y=0;y<current.matrix.length;y++) for(let x=0;x<current.matrix[y].length;x++){
+            if(current.matrix[y][x]) ctx.fillRect((current.pos.x+x)*scale,(current.pos.y+y)*scale,scale-1,scale-1);
+          }
         }
       }
-    }
-  }
 
-  function rotate(matrix, dir){
-    for(let y=0;y<matrix.length;y++){
-      for(let x=0;x<y;x++){
-        [matrix[x][y],matrix[y][x]] = [matrix[y][x],matrix[x][y]];
+      function update(time=0){
+        if(!running) return;
+        const delta=time-lastTime; lastTime=time;
+        dropCounter+=delta;
+        if(dropCounter>dropInterval) playerDrop();
+        draw();
+        requestAnimationFrame(update);
       }
-    }
-    if(dir>0) matrix.forEach(r=>r.reverse());
-    else matrix.reverse();
-  }
 
-  function playerDrop(){
-    current.pos.y++;
-    if(collide(grid,current.matrix,current.pos)){
-      current.pos.y--;
-      merge(grid,current.matrix,current.pos);
-      sweepLines();
-      spawnPiece();
-      if(collide(grid,current.matrix,current.pos)){
-        running = false;
-        statusEl.textContent = "Game Over";
-      }
-    }
-    dropCounter = 0;
-  }
+      document.addEventListener("keydown",e=>{
+        if(!running) return;
+        if(e.key==="ArrowLeft") current.pos.x--;
+        if(e.key==="ArrowRight") current.pos.x++;
+        if(e.key==="ArrowDown") playerDrop();
+        if(e.key==="ArrowUp") rotate(current.matrix,1);
+        if(e.code==="Space"){ e.preventDefault(); while(!collide(grid,current.matrix,{x:current.pos.x,y:current.pos.y+1})) current.pos.y++; playerDrop(); }
+        draw();
+      });
 
-  function sweepLines(){
-    let rowCount = 0;
-    outer: for(let y=grid.length-1; y>=0; y--){
-      fo
+      document.getElementById("startBtn").addEventListener("click",()=>{
+        grid=Array.from({length: rows},()=>Array(cols).fill(0));
+        score=0; lines=0; running=true; updateHUD();
+        spawnPiece(); requestAnimationFrame(update);
+      });
+
+      spawnPiece(); updateHUD();
+    };
+  </script>
+</body>
+</html>
