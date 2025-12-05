@@ -1,18 +1,3 @@
-<!--
-Tetris Prize Website
-Single-file HTML (save as index.html and open in a browser)
-
-How to use:
-- Replace PRIZE_LINK value in the JavaScript below with your Google Drive share link OR
-  open the Settings button on the page and paste the link there.
-- Win condition: clear 10 lines (configurable via WIN_LINES variable).
-- When the player reaches the win condition, a prize modal appears with a button to open the link.
-
-Notes:
-- For Google Drive links, make sure the file is shared with the intended audience (e.g. 'Anyone with the link').
-- This is a simple Tetris implementation for demonstration and light play.
--->
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -36,10 +21,7 @@ Notes:
     p{margin:6px 0 12px 0;color:var(--muted);font-size:13px}
     .controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .control{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px}
-    .settings{margin-top:12px;display:flex;gap:8px}
-    input[type=text]{flex:1;padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:inherit}
     .footer{font-size:12px;color:var(--muted);margin-top:10px}
-    /* modal */
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center}
     .modal{background:var(--panel);padding:18px;border-radius:12px;max-width:420px;width:92%;box-shadow:0 10px 40px rgba(2,6,23,0.7)}
     .modal.show{display:block}
@@ -64,7 +46,7 @@ Notes:
 
     <div class="panel right">
       <h1>Tetris Prize Challenge</h1>
-      <p>Clear <strong id="winLinesText">10</strong> lines to win the prize. Use arrow keys to move, up to rotate, space to hard-drop.</p>
+      <p>Clear <strong id="winLinesText">10</strong> lines to unlock the prize!</p>
 
       <div class="controls">
         <div class="control">
@@ -77,37 +59,32 @@ Notes:
         </div>
       </div>
 
-      <div class="settings">
-        <input id="prizeInput" type="text" placeholder="Paste Google Drive prize link here" />
-        <button id="savePrize">Save</button>
-      </div>
-      <p class="footer">Tip: ensure your Google Drive file is shared with "Anyone with the link" if you want others to open it without signing in.</p>
+      <p class="footer">Prize unlocks automatically after winning.</p>
     </div>
   </div>
 
   <div id="modal" class="modal-backdrop">
     <div class="modal">
       <div class="win-badge">You Won!</div>
-      <h2>Congratulations — prize unlocked 🎉</h2>
-      <p id="modalText">Click the button below to open the prize. If the link is not set, paste it in Settings and press Save.</p>
+      <h2>Congratulations — Prize Unlocked 🎉</h2>
+      <p>Your prize is ready!</p>
       <div style="margin-top:12px;display:flex;gap:8px">
         <button id="openPrize">Open Prize</button>
-        <button id="closeModal">Close</button>
       </div>
     </div>
   </div>
 
   <script>
-    /* CONFIG */
-    const WIN_LINES = 10; // lines required to win
-    let PRIZE_LINK = "https://drive.google.com/file/d/1drk9tt4fSFeYoK0IbczhLP-RW0G4pYSe/view?usp=sharing"; // <-- replace with your Google Drive link OR use the input on the page
+    // Fixed Prize Link
+    const PRIZE_LINK = "https://drive.google.com/file/d/1drk9tt4fSFeYoK0IbczhLP-RW0G4pYSe/view?usp=sharing";
+    const WIN_LINES = 10;
 
-    // Basic Tetris implementation
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
-    const scale = 30; // size of one block in pixels
+    const scale = 30;
     const cols = 10;
     const rows = 20;
+
     canvas.width = cols * scale;
     canvas.height = rows * scale;
 
@@ -115,54 +92,25 @@ Notes:
     const linesEl = document.getElementById('lines');
     const levelEl = document.getElementById('level');
     const statusEl = document.getElementById('status');
-    const goalEl = document.getElementById('goal');
-    const winLinesText = document.getElementById('winLinesText');
-
-    winLinesText.textContent = WIN_LINES;
-    goalEl.textContent = `Clear ${WIN_LINES} lines`;
 
     const modalBackdrop = document.getElementById('modal');
     const openPrizeBtn = document.getElementById('openPrize');
-    const closeModalBtn = document.getElementById('closeModal');
-    const prizeInput = document.getElementById('prizeInput');
-    const savePrizeBtn = document.getElementById('savePrize');
 
-    savePrizeBtn.addEventListener('click', ()=>{
-      PRIZE_LINK = prizeInput.value.trim();
-      alert('Prize link saved.');
+    openPrizeBtn.addEventListener('click', () => {
+      window.open(PRIZE_LINK, "_blank");
     });
 
-    function showModal(){ modalBackdrop.style.display = 'flex'; }
-    function closeModal(){ modalBackdrop.style.display = 'none'; }
+    function showModal(){ modalBackdrop.style.display = "flex"; }
 
-    closeModalBtn.addEventListener('click', closeModal);
-    openPrizeBtn.addEventListener('click', ()=>{
-      if(PRIZE_LINK){
-        window.open(PRIZE_LINK, '_blank');
-      } else {
-        alert('Prize link not set. Paste it in the settings field and press Save.');
-      }
-    });
-
-    // Game state
     let grid = createMatrix(cols, rows);
     let current = null;
-    let next = null;
     let dropCounter = 0;
-    let dropInterval = 800; // ms
+    let dropInterval = 800;
     let lastTime = 0;
     let score = 0;
     let lines = 0;
     let level = 1;
     let running = false;
-
-    function createMatrix(w,h){
-      const m = [];
-      for(let y=0;y<h;y++){
-        m.push(new Array(w).fill(0));
-      }
-      return m;
-    }
 
     const tetrominoes = {
       I: [[1,1,1,1]],
@@ -174,36 +122,48 @@ Notes:
       Z: [[7,7,0],[0,7,7]]
     };
 
-    const colors = [null,'#00f0f0','#0000f0','#f0a000','#f0f000','#00f000','#a000f0','#f00000'];
+    const colors = [null,"#00f0f0","#0000f0","#f0a000","#f0f000","#00f000","#a000f0","#f00000"];
+
+    function createMatrix(w, h){
+      const m = [];
+      for(let y=0; y<h; y++) m.push(new Array(w).fill(0));
+      return m;
+    }
 
     function createPiece(type){
-      return tetrominoes[type].map(row=>row.slice());
+      return tetrominoes[type].map(r => r.slice());
     }
 
     function collide(grid, piece, offset){
-      for(let y=0;y<piece.length;y++){
-        for(let x=0;x<piece[y].length;x++){
-          if(piece[y][x]!==0 && (grid[y+offset.y] && grid[y+offset.y][x+offset.x])!==0) return true;
+      for(let y=0; y<piece.length; y++){
+        for(let x=0; x<piece[y].length; x++){
+          if(piece[y][x] !== 0 &&
+            (grid[y+offset.y] && grid[y+offset.y][x+offset.x]) !== 0){
+            return true;
+          }
         }
       }
       return false;
     }
 
-    function merge(grid,piece,offset){
-      for(let y=0;y<piece.length;y++){
-        for(let x=0;x<piece[y].length;x++){
-          if(piece[y][x]) grid[y+offset.y][x+offset.x]=piece[y][x];
+    function merge(grid, piece, offset){
+      for(let y=0; y<piece.length; y++){
+        for(let x=0; x<piece[y].length; x++){
+          if(piece[y][x] !== 0){
+            grid[y+offset.y][x+offset.x] = piece[y][x];
+          }
         }
       }
     }
 
-    function rotate(matrix,dir){
+    function rotate(matrix, dir){
       for(let y=0;y<matrix.length;y++){
         for(let x=0;x<y;x++){
-          [matrix[x][y],matrix[y][x]]=[matrix[y][x],matrix[x][y]];
+          [matrix[x][y],matrix[y][x]] = [matrix[y][x],matrix[x][y]];
         }
       }
-      if(dir>0) matrix.forEach(row=>row.reverse()); else matrix.reverse();
+      if(dir>0) matrix.forEach(r=>r.reverse());
+      else matrix.reverse();
     }
 
     function playerDrop(){
@@ -214,69 +174,46 @@ Notes:
         sweepLines();
         spawnPiece();
         if(collide(grid,current.matrix,current.pos)){
-          // game over
-          running=false;
-          statusEl.textContent='Game Over';
+          running = false;
+          statusEl.textContent = "Game Over";
         }
       }
-      dropCounter=0;
-    }
-
-    function playerMove(dir){
-      current.pos.x+=dir;
-      if(collide(grid,current.matrix,current.pos)) current.pos.x-=dir;
-    }
-
-    function playerRotate(dir){
-      const posX = current.pos.x;
-      rotate(current.matrix,dir);
-      let offset=1;
-      while(collide(grid,current.matrix,current.pos)){
-        current.pos.x+=offset;
-        offset = -(offset + (offset>0?1:-1));
-        if(offset>current.matrix[0].length){ rotate(current.matrix,-dir); current.pos.x=posX; return; }
-      }
+      dropCounter = 0;
     }
 
     function sweepLines(){
-      let rowCount=0;
-      outer: for(let y=grid.length-1;y>=0;y--){
-        for(let x=0;x<grid[y].length;x++){
-          if(!grid[y][x]) continue outer;
+      let rowCount = 0;
+      outer: for(let y=grid.length-1; y>=0; y--){
+        for(let x=0; x<grid[y].length; x++){
+          if(grid[y][x] === 0) continue outer;
         }
-        const row = grid.splice(y,1)[0].fill(0);
-        grid.unshift(row);
-        y++; // re-check this row index after unshift
+        grid.splice(y,1);
+        grid.unshift(new Array(cols).fill(0));
+        y++;
         rowCount++;
       }
-      if(rowCount>0){
-        lines+=rowCount;
-        score += (rowCount*100) * rowCount; // bumped scoring
-        if(lines>=WIN_LINES && running){
-          // player wins
-          running=false;
-          statusEl.textContent='You Win!';
+
+      if(rowCount > 0){
+        lines += rowCount;
+
+        if(lines >= WIN_LINES){
+          running = false;
+          statusEl.textContent = "You Win!";
           showModal();
         }
-        // level up every 10 lines
-        const newLevel = Math.floor(lines/10)+1;
-        if(newLevel>level){ level=newLevel; dropInterval=Math.max(100, dropInterval-100*(newLevel-level)); }
+
+        score += rowCount * 100;
         updateHUD();
       }
     }
 
     function spawnPiece(){
-      const types = 'IJLOSTZ';
+      const types = "IJLOSTZ";
       const t = types[Math.floor(Math.random()*types.length)];
       current = {
-        matrix:createPiece(t),
-        pos:{x:Math.floor((cols - tetrominoes[t][0].length)/2), y:0}
+        matrix: createPiece(t),
+        pos: { x: Math.floor(cols/2)-1, y: 0 }
       };
-    }
-
-    function hardDrop(){
-      while(!collide(grid,current.matrix,{x:current.pos.x,y:current.pos.y+1})) current.pos.y++;
-      playerDrop();
     }
 
     function updateHUD(){
@@ -286,12 +223,11 @@ Notes:
     }
 
     function draw(){
-      ctx.fillStyle = '#071129';
+      ctx.fillStyle = "#071129";
       ctx.fillRect(0,0,canvas.width,canvas.height);
 
-      // draw grid
-      for(let y=0;y<rows;y++){
-        for(let x=0;x<cols;x++){
+      for(let y=0; y<rows; y++){
+        for(let x=0; x<cols; x++){
           const val = grid[y][x];
           if(val){
             ctx.fillStyle = colors[val];
@@ -299,10 +235,10 @@ Notes:
           }
         }
       }
-      // draw current piece
+
       if(current){
-        for(let y=0;y<current.matrix.length;y++){
-          for(let x=0;x<current.matrix[y].length;x++){
+        for(let y=0; y<current.matrix.length; y++){
+          for(let x=0; x<current.matrix[y].length; x++){
             const val = current.matrix[y][x];
             if(val){
               ctx.fillStyle = colors[val];
@@ -318,50 +254,43 @@ Notes:
       const delta = time - lastTime;
       lastTime = time;
       dropCounter += delta;
-      if(dropCounter > dropInterval){
-        playerDrop();
-      }
+
+      if(dropCounter > dropInterval) playerDrop();
+
       draw();
       requestAnimationFrame(update);
     }
 
     // input
-    document.addEventListener('keydown', e=>{
+    document.addEventListener("keydown", e=>{
       if(!running) return;
-      if(e.key === 'ArrowLeft') playerMove(-1);
-      if(e.key === 'ArrowRight') playerMove(1);
-      if(e.key === 'ArrowDown') playerDrop();
-      if(e.code === 'Space') { e.preventDefault(); hardDrop(); }
-      if(e.key === 'ArrowUp') playerRotate(1);
+      if(e.key === "ArrowLeft") current.pos.x--;
+      if(e.key === "ArrowRight") current.pos.x++;
+      if(e.key === "ArrowDown") playerDrop();
+      if(e.code === "Space") { e.preventDefault(); while(!collide(grid,current.matrix,{x:current.pos.x,y:current.pos.y+1})) current.pos.y++; playerDrop(); }
+      if(e.key === "ArrowUp") rotate(current.matrix,1);
       draw();
     });
 
-    // controls
-    document.getElementById('startBtn').addEventListener('click', ()=>{
+    document.getElementById("startBtn").addEventListener("click", ()=>{
       grid = createMatrix(cols, rows);
-      score = 0; lines = 0; level = 1; dropInterval=800;
+      score = 0; lines = 0; level = 1;
       updateHUD();
       spawnPiece();
       running = true;
-      statusEl.textContent='Playing';
+      statusEl.textContent = "Playing";
       lastTime = 0;
       requestAnimationFrame(update);
     });
-    document.getElementById('pauseBtn').addEventListener('click', ()=>{
+
+    document.getElementById("pauseBtn").addEventListener("click", ()=>{
       running = !running;
-      statusEl.textContent = running ? 'Playing' : 'Paused';
+      statusEl.textContent = running ? "Playing" : "Paused";
       if(running) requestAnimationFrame(update);
     });
 
-    // initialize
-    (function init(){
-      spawnPiece();
-      updateHUD();
-      statusEl.textContent='Ready';
-    })();
-
-    // handy: let user set PRIZE_LINK by editing input and clicking Save, or by editing the variable in the file.
+    spawnPiece();
+    updateHUD();
   </script>
 </body>
 </html>
-
