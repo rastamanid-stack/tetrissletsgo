@@ -1,221 +1,213 @@
 <script>
-  // Fixed Prize Link (used automatically)
-  const PRIZE_LINK = "https://drive.google.com/file/d/1drk9tt4fSFeYoK0IbczhLP-RW0G4pYSe/view?usp=sharing";
-  const WIN_LINES = 10;
+const PRIZE_LINK = "https://drive.google.com/file/d/1drk9tt4fSFeYoK0IbczhLP-RW0G4pYSe/view?usp=sharing";
+const WIN_LINES = 10;
 
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  const scale = 30;
-  const cols = 10;
-  const rows = 20;
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const scale = 30;
+const cols = 10;
+const rows = 20;
 
-  canvas.width = cols * scale;
-  canvas.height = rows * scale;
+canvas.width = cols * scale;
+canvas.height = rows * scale;
 
-  const scoreEl = document.getElementById('score');
-  const linesEl = document.getElementById('lines');
-  const levelEl = document.getElementById('level');
-  const statusEl = document.getElementById('status');
+const scoreEl = document.getElementById('score');
+const linesEl = document.getElementById('lines');
+const levelEl = document.getElementById('level');
+const statusEl = document.getElementById('status');
+const modalBackdrop = document.getElementById('modal');
 
-  const modalBackdrop = document.getElementById('modal');
+let grid = createMatrix(cols, rows);
+let current = null;
+let dropCounter = 0;
+let dropInterval = 800;
+let lastTime = 0;
+let score = 0;
+let lines = 0;
+let level = 1;
+let running = false;
 
-  function showModal(){ 
-    modalBackdrop.style.display = "flex"; 
-    // Automatically open prize when modal shows
-    window.open(PRIZE_LINK, "_blank");
-  }
+const tetrominoes = {
+  I: [[1,1,1,1]],
+  J: [[2,0,0],[2,2,2]],
+  L: [[0,0,3],[3,3,3]],
+  O: [[4,4],[4,4]],
+  S: [[0,5,5],[5,5,0]],
+  T: [[0,6,0],[6,6,6]],
+  Z: [[7,7,0],[0,7,7]]
+};
 
-  let grid = createMatrix(cols, rows);
-  let current = null;
-  let dropCounter = 0;
-  let dropInterval = 800;
-  let lastTime = 0;
-  let score = 0;
-  let lines = 0;
-  let level = 1;
-  let running = false;
+const colors = [null,"#00f0f0","#0000f0","#f0a000","#f0f000","#00f000","#a000f0","#f00000"];
 
-  const tetrominoes = {
-    I: [[1,1,1,1]],
-    J: [[2,0,0],[2,2,2]],
-    L: [[0,0,3],[3,3,3]],
-    O: [[4,4],[4,4]],
-    S: [[0,5,5],[5,5,0]],
-    T: [[0,6,0],[6,6,6]],
-    Z: [[7,7,0],[0,7,7]]
-  };
+function createMatrix(w, h){
+  const m = [];
+  for(let y=0; y<h; y++) m.push(new Array(w).fill(0));
+  return m;
+}
 
-  const colors = [null,"#00f0f0","#0000f0","#f0a000","#f0f000","#00f000","#a000f0","#f00000"];
+function createPiece(type){
+  return tetrominoes[type].map(r => r.slice());
+}
 
-  function createMatrix(w, h){
-    const m = [];
-    for(let y=0; y<h; y++) m.push(new Array(w).fill(0));
-    return m;
-  }
-
-  function createPiece(type){
-    return tetrominoes[type].map(r => r.slice());
-  }
-
-  function collide(grid, piece, offset){
-    for(let y=0; y<piece.length; y++){
-      for(let x=0; x<piece[y].length; x++){
-        if(piece[y][x] !== 0 &&
-          (grid[y+offset.y] && grid[y+offset.y][x+offset.x]) !== 0){
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  function merge(grid, piece, offset){
-    for(let y=0; y<piece.length; y++){
-      for(let x=0; x<piece[y].length; x++){
-        if(piece[y][x] !== 0){
-          grid[y+offset.y][x+offset.x] = piece[y][x];
-        }
+function collide(grid, piece, offset){
+  for(let y=0; y<piece.length; y++){
+    for(let x=0; x<piece[y].length; x++){
+      if(piece[y][x] !== 0 &&
+        (grid[y+offset.y] && grid[y+offset.y][x+offset.x]) !== 0){
+        return true;
       }
     }
   }
+  return false;
+}
 
-  // Keep rotation
-  function rotate(matrix, dir){
-    for(let y=0;y<matrix.length;y++){
-      for(let x=0;x<y;x++){
-        [matrix[x][y],matrix[y][x]] = [matrix[y][x],matrix[x][y]];
+function merge(grid, piece, offset){
+  for(let y=0; y<piece.length; y++){
+    for(let x=0; x<piece[y].length; x++){
+      if(piece[y][x] !== 0){
+        grid[y+offset.y][x+offset.x] = piece[y][x];
       }
     }
-    if(dir>0) matrix.forEach(r=>r.reverse());
-    else matrix.reverse();
   }
+}
 
-  function playerDrop(){
-    current.pos.y++;
+function rotate(matrix, dir){
+  for(let y=0;y<matrix.length;y++){
+    for(let x=0;x<y;x++){
+      [matrix[x][y],matrix[y][x]] = [matrix[y][x],matrix[x][y]];
+    }
+  }
+  if(dir>0) matrix.forEach(r=>r.reverse());
+  else matrix.reverse();
+}
+
+function playerDrop(){
+  current.pos.y++;
+  if(collide(grid,current.matrix,current.pos)){
+    current.pos.y--;
+    merge(grid,current.matrix,current.pos);
+    sweepLines();
+    spawnPiece();
     if(collide(grid,current.matrix,current.pos)){
-      current.pos.y--;
-      merge(grid,current.matrix,current.pos);
-      sweepLines();
-      spawnPiece();
-      if(collide(grid,current.matrix,current.pos)){
-        running = false;
-        statusEl.textContent = "Game Over";
-      }
-    }
-    dropCounter = 0;
-  }
-
-  function sweepLines(){
-    let rowCount = 0;
-    outer: for(let y=grid.length-1; y>=0; y--){
-      for(let x=0; x<grid[y].length; x++){
-        if(grid[y][x] === 0) continue outer;
-      }
-      grid.splice(y,1);
-      grid.unshift(new Array(cols).fill(0));
-      y++;
-      rowCount++;
-    }
-
-    if(rowCount > 0){
-      lines += rowCount;
-
-      if(lines >= WIN_LINES){
-        running = false;
-        statusEl.textContent = "You Win!";
-        showModal();
-      }
-
-      score += rowCount * 100;
-      updateHUD();
+      running = false;
+      statusEl.textContent = "Game Over";
     }
   }
+  dropCounter = 0;
+}
 
-  function spawnPiece(){
-    const types = "IJLOSTZ";
-    const t = types[Math.floor(Math.random()*types.length)];
-    current = {
-      matrix: createPiece(t),
-      pos: { x: Math.floor(cols/2)-1, y: 0 }
-    };
+function sweepLines(){
+  let rowCount = 0;
+  outer: for(let y=grid.length-1; y>=0; y--){
+    for(let x=0; x<grid[y].length; x++){
+      if(grid[y][x] === 0) continue outer;
+    }
+    grid.splice(y,1);
+    grid.unshift(new Array(cols).fill(0));
+    y++;
+    rowCount++;
   }
 
-  function updateHUD(){
-    scoreEl.textContent = score;
-    linesEl.textContent = lines;
-    levelEl.textContent = level;
+  if(rowCount > 0){
+    lines += rowCount;
+    if(lines >= WIN_LINES){
+      running = false;
+      statusEl.textContent = "You Win!";
+      modalBackdrop.style.display = "flex";
+      // Open prize in a user-triggered event: use setTimeout to allow modal to show
+      setTimeout(()=> window.open(PRIZE_LINK, "_blank"), 100);
+    }
+    score += rowCount * 100;
+    updateHUD();
+  }
+}
+
+function spawnPiece(){
+  const types = "IJLOSTZ";
+  const t = types[Math.floor(Math.random()*types.length)];
+  current = {
+    matrix: createPiece(t),
+    pos: { x: Math.floor(cols/2)-1, y: 0 }
+  };
+}
+
+function updateHUD(){
+  scoreEl.textContent = score;
+  linesEl.textContent = lines;
+  levelEl.textContent = level;
+}
+
+function draw(){
+  ctx.fillStyle = "#071129";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  for(let y=0; y<rows; y++){
+    for(let x=0; x<cols; x++){
+      const val = grid[y][x];
+      if(val){
+        ctx.fillStyle = colors[val];
+        ctx.fillRect(x*scale,y*scale,scale-1,scale-1);
+      }
+    }
   }
 
-  function draw(){
-    ctx.fillStyle = "#071129";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    for(let y=0; y<rows; y++){
-      for(let x=0; x<cols; x++){
-        const val = grid[y][x];
+  if(current){
+    for(let y=0; y<current.matrix.length; y++){
+      for(let x=0; x<current.matrix[y].length; x++){
+        const val = current.matrix[y][x];
         if(val){
           ctx.fillStyle = colors[val];
-          ctx.fillRect(x*scale,y*scale,scale-1,scale-1);
-        }
-      }
-    }
-
-    if(current){
-      for(let y=0; y<current.matrix.length; y++){
-        for(let x=0; x<current.matrix[y].length; x++){
-          const val = current.matrix[y][x];
-          if(val){
-            ctx.fillStyle = colors[val];
-            ctx.fillRect((current.pos.x+x)*scale,(current.pos.y+y)*scale,scale-1,scale-1);
-          }
+          ctx.fillRect((current.pos.x+x)*scale,(current.pos.y+y)*scale,scale-1,scale-1);
         }
       }
     }
   }
+}
 
-  function update(time=0){
-    if(!running) return;
-    const delta = time - lastTime;
-    lastTime = time;
-    dropCounter += delta;
+function update(time=0){
+  if(!running) return;
+  const delta = time - lastTime;
+  lastTime = time;
+  dropCounter += delta;
 
-    if(dropCounter > dropInterval) playerDrop();
+  if(dropCounter > dropInterval) playerDrop();
 
-    draw();
-    requestAnimationFrame(update);
+  draw();
+  requestAnimationFrame(update);
+}
+
+// input
+document.addEventListener("keydown", e=>{
+  if(!running) return;
+  if(e.key === "ArrowLeft") current.pos.x--;
+  if(e.key === "ArrowRight") current.pos.x++;
+  if(e.key === "ArrowDown") playerDrop();
+  if(e.code === "Space") { 
+    e.preventDefault(); 
+    while(!collide(grid,current.matrix,{x:current.pos.x,y:current.pos.y+1})) current.pos.y++; 
+    playerDrop(); 
   }
+  if(e.key === "ArrowUp") rotate(current.matrix,1);
+  draw();
+});
 
-  // input
-  document.addEventListener("keydown", e=>{
-    if(!running) return;
-    if(e.key === "ArrowLeft") current.pos.x--;
-    if(e.key === "ArrowRight") current.pos.x++;
-    if(e.key === "ArrowDown") playerDrop();
-    if(e.code === "Space") { 
-      e.preventDefault(); 
-      while(!collide(grid,current.matrix,{x:current.pos.x,y:current.pos.y+1})) current.pos.y++; 
-      playerDrop(); 
-    }
-    if(e.key === "ArrowUp") rotate(current.matrix,1);
-    draw();
-  });
-
-  document.getElementById("startBtn").addEventListener("click", ()=>{
-    grid = createMatrix(cols, rows);
-    score = 0; lines = 0; level = 1;
-    updateHUD();
-    spawnPiece();
-    running = true;
-    statusEl.textContent = "Playing";
-    lastTime = 0;
-    requestAnimationFrame(update);
-  });
-
-  document.getElementById("pauseBtn").addEventListener("click", ()=>{
-    running = !running;
-    statusEl.textContent = running ? "Playing" : "Paused";
-    if(running) requestAnimationFrame(update);
-  });
-
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  grid = createMatrix(cols, rows);
+  score = 0; lines = 0; level = 1;
+  updateHUD();
   spawnPiece();
-  updateH
+  running = true;
+  statusEl.textContent = "Playing";
+  lastTime = 0;
+  requestAnimationFrame(update);
+});
+
+document.getElementById("pauseBtn").addEventListener("click", ()=>{
+  running = !running;
+  statusEl.textContent = running ? "Playing" : "Paused";
+  if(running) requestAnimationFrame(update);
+});
+
+spawnPiece();
+updateHUD();
+</script>
