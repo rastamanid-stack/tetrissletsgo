@@ -1,304 +1,367 @@
-<!DOCTYPE html>
+<!--
+Tetris Prize Website
+Single-file HTML (save as index.html and open in a browser)
+
+How to use:
+- Replace PRIZE_LINK value in the JavaScript below with your Google Drive share link OR
+  open the Settings button on the page and paste the link there.
+- Win condition: clear 10 lines (configurable via WIN_LINES variable).
+- When the player reaches the win condition, a prize modal appears with a button to open the link.
+
+Notes:
+- For Google Drive links, make sure the file is shared with the intended audience (e.g. 'Anyone with the link').
+- This is a simple Tetris implementation for demonstration and light play.
+-->
+
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Tetris Prize Challenge</title>
-<style>
-:root{--bg:#0b1220;--panel:#0f1724;--accent:#8be9fd;--muted:#9aa6b2}
-html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
-body{background:linear-gradient(180deg,#071129 0%,#081226 60%);color:#e6eef6;display:flex;align-items:center;justify-content:center;padding:24px}
-.wrap{display:flex;gap:28px;align-items:flex-start}
-.panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-.left{display:flex;flex-direction:column;align-items:center}
-canvas{background:#071129;border-radius:8px;display:block}
-.hud{margin-top:12px;display:flex;gap:12px}
-.stat{background:rgba(255,255,255,0.02);padding:8px 12px;border-radius:8px;text-align:center}
-.small{font-size:12px;color:var(--muted)}
-button{background:var(--accent);border:none;padding:8px 12px;border-radius:8px;color:#06121a;font-weight:600;cursor:pointer}
-.right{width:260px}
-h1{margin:0 0 8px 0;font-size:20px}
-p{margin:6px 0 12px 0;color:var(--muted);font-size:13px}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.control{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px}
-.settings{margin-top:12px;display:flex;gap:8px}
-input[type=text]{flex:1;padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:inherit}
-.footer{font-size:12px;color:var(--muted);margin-top:10px}
-/* modal */
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center}
-.modal{background:var(--panel);padding:18px;border-radius:12px;max-width:420px;width:92%;box-shadow:0 10px 40px rgba(2,6,23,0.7)}
-.modal.show{display:block}
-.win-badge{font-size:18px;color:#06121a;background:#a6f4c5;padding:6px 10px;border-radius:999px;display:inline-block;margin-bottom:8px}
-@media(max-width:820px){body{padding:12px}.wrap{flex-direction:column;align-items:center}.right{width:100%}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tetris Prize Challenge</title>
+  <style>
+    :root{--bg:#0b1220;--panel:#0f1724;--accent:#8be9fd;--muted:#9aa6b2}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{background:linear-gradient(180deg,#071129 0%,#081226 60%);color:#e6eef6;display:flex;align-items:center;justify-content:center;padding:24px}
+    .wrap{display:flex;gap:28px;align-items:flex-start}
+    .panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .left{display:flex;flex-direction:column;align-items:center}
+    canvas{background:#071129;border-radius:8px;display:block}
+    .hud{margin-top:12px;display:flex;gap:12px}
+    .stat{background:rgba(255,255,255,0.02);padding:8px 12px;border-radius:8px;text-align:center}
+    .small{font-size:12px;color:var(--muted)}
+    button{background:var(--accent);border:none;padding:8px 12px;border-radius:8px;color:#06121a;font-weight:600;cursor:pointer}
+    .right{width:260px}
+    h1{margin:0 0 8px 0;font-size:20px}
+    p{margin:6px 0 12px 0;color:var(--muted);font-size:13px}
+    .controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .control{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px}
+    .settings{margin-top:12px;display:flex;gap:8px}
+    input[type=text]{flex:1;padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:inherit}
+    .footer{font-size:12px;color:var(--muted);margin-top:10px}
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center}
+    .modal{background:var(--panel);padding:18px;border-radius:12px;max-width:420px;width:92%;box-shadow:0 10px 40px rgba(2,6,23,0.7)}
+    .modal.show{display:block}
+    .win-badge{font-size:18px;color:#06121a;background:#a6f4c5;padding:6px 10px;border-radius:999px;display:inline-block;margin-bottom:8px}
+    @media(max-width:820px){body{padding:12px}.wrap{flex-direction:column;align-items:center}.right{width:100%}}
+  </style>
 </head>
 <body>
-<div class="wrap">
-<div class="panel left">
-<canvas id="game" width="300" height="600"></canvas>
-<div class="hud">
-<div class="stat"><div class="small">Score</div><div id="score">0</div></div>
-<div class="stat"><div class="small">Lines</div><div id="lines">0</div></div>
-<div class="stat"><div class="small">Level</div><div id="level">1</div></div>
-</div>
-<div style="margin-top:10px;display:flex;gap:8px;align-items:center">
-<button id="startBtn">Start / Restart</button>
-<button id="pauseBtn">Pause</button>
-</div>
-</div>
+  <div class="wrap">
+    <div class="panel left">
+      <canvas id="game" width="300" height="600"></canvas>
+      <div class="hud">
+        <div class="stat"><div class="small">Score</div><div id="score">0</div></div>
+        <div class="stat"><div class="small">Lines</div><div id="lines">0</div></div>
+        <div class="stat"><div class="small">Level</div><div id="level">1</div></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+        <button id="startBtn">Start / Restart</button>
+        <button id="pauseBtn">Pause</button>
+      </div>
+    </div>
 
-<div class="panel right">
-<h1>Tetris Prize Challenge</h1>
-<p>Clear <strong id="winLinesText">10</strong> lines to win the prize. Use arrow keys to move, up to rotate, space to hard-drop.</p>
+    <div class="panel right">
+      <h1>Tetris Prize Challenge</h1>
+      <p>Clear <strong id="winLinesText">10</strong> lines to win the prize. Use arrow keys to move, up to rotate, space to hard-drop.</p>
 
-<div class="controls">
-<div class="control">
-<div class="small">Goal</div>
-<div id="goal">Clear 10 lines</div>
-</div>
-<div class="control">
-<div class="small">Status</div>
-<div id="status">Ready</div>
-</div>
-</div>
+      <div class="controls">
+        <div class="control">
+          <div class="small">Goal</div>
+          <div id="goal">Clear 10 lines</div>
+        </div>
+        <div class="control">
+          <div class="small">Status</div>
+          <div id="status">Ready</div>
+        </div>
+      </div>
 
-<div class="settings">
-<input id="prizeInput" type="text" placeholder="Paste Google Drive prize link here" />
-<button id="savePrize">Save</button>
-</div>
-<p class="footer">Tip: ensure your Google Drive file is shared with "Anyone with the link".</p>
-</div>
-</div>
+      <div class="settings">
+        <input id="prizeInput" type="text" placeholder="Paste Google Drive prize link here" />
+        <button id="savePrize">Save</button>
+      </div>
+      <p class="footer">Tip: ensure your Google Drive file is shared with "Anyone with the link" if you want others to open it without signing in.</p>
+    </div>
+  </div>
 
-<div id="modal" class="modal-backdrop">
-<div class="modal">
-<div class="win-badge">You Won!</div>
-<h2>Congratulations — prize unlocked 🎉</h2>
-<p id="modalText">Click the button below to open the prize.</p>
-<div style="margin-top:12px;display:flex;gap:8px">
-<button id="openPrize">Open Prize</button>
-<button id="closeModal">Close</button>
-</div>
-</div>
-</div>
+  <div id="modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="win-badge">You Won!</div>
+      <h2>Congratulations — prize unlocked 🎉</h2>
+      <p id="modalText">Click the button below to open the prize. If the link is not set, paste it in Settings and press Save.</p>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button id="openPrize">Open Prize</button>
+        <button id="closeModal">Close</button>
+      </div>
+    </div>
+  </div>
 
-<script>
-// ==== CONFIG ====
-const WIN_LINES = 10;
-let PRIZE_LINK = "";
+  <script>
+    /* CONFIG */
+    const WIN_LINES = 10; // lines required to win
+    let PRIZE_LINK = "https://drive.google.com/file/d/1drk9tt4fSFeYoK0IbczhLP-RW0G4pYSe/view?usp=sharing"; // <-- replace with your Google Drive link OR use the input on the page
 
-// ==== TETRIS GAME ====
+    // Basic Tetris implementation
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const scale = 30; // size of one block in pixels
+    const cols = 10;
+    const rows = 20;
+    canvas.width = cols * scale;
+    canvas.height = rows * scale;
 
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-const scale = 30;
-const cols = 10;
-const rows = 20;
-canvas.width = cols * scale;
-canvas.height = rows * scale;
+    const scoreEl = document.getElementById('score');
+    const linesEl = document.getElementById('lines');
+    const levelEl = document.getElementById('level');
+    const statusEl = document.getElementById('status');
+    const goalEl = document.getElementById('goal');
+    const winLinesText = document.getElementById('winLinesText');
 
-function emptyMatrix(w, h) {
-  const m = [];
-  while (h--) m.push(new Array(w).fill(0));
-  return m;
-}
+    winLinesText.textContent = WIN_LINES;
+    goalEl.textContent = `Clear ${WIN_LINES} lines`;
 
-const arena = emptyMatrix(cols, rows);
+    const modalBackdrop = document.getElementById('modal');
+    const openPrizeBtn = document.getElementById('openPrize');
+    const closeModalBtn = document.getElementById('closeModal');
+    const prizeInput = document.getElementById('prizeInput');
+    const savePrizeBtn = document.getElementById('savePrize');
 
-const pieces = {
-  T: [[0,1,0],[1,1,1],[0,0,0]],
-  O: [[1,1],[1,1]],
-  L: [[1,0,0],[1,1,1],[0,0,0]],
-  J: [[0,0,1],[1,1,1],[0,0,0]],
-  I: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
-  S: [[0,1,1],[1,1,0],[0,0,0]],
-  Z: [[1,1,0],[0,1,1],[0,0,0]],
-};
-
-function rotate(matrix) {
-  return matrix[0].map((_, i) => matrix.map(row => row[i])).reverse();
-}
-
-function collide(arena, player) {
-  const m = player.matrix;
-  const o = player.pos;
-  for (let y = 0; y < m.length; y++)
-    for (let x = 0; x < m[y].length; x++)
-      if (m[y][x] && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0)
-        return true;
-  return false;
-}
-
-function merge(arena, player) {
-  player.matrix.forEach((row, y) => {
-    row.forEach((v, x) => {
-      if (v) arena[y + player.pos.y][x + player.pos.x] = v;
+    savePrizeBtn.addEventListener('click', ()=>{
+      PRIZE_LINK = prizeInput.value.trim();
+      alert('Prize link saved.');
     });
-  });
-}
 
-function drawMatrix(matrix, offset) {
-  matrix.forEach((row, y) =>
-    row.forEach((v, x) => {
-      if (v) {
-        ctx.fillStyle = "#8be9fd";
-        ctx.fillRect((x + offset.x) * scale, (y + offset.y) * scale, scale, scale);
+    function showModal(){ modalBackdrop.style.display = 'flex'; }
+    function closeModal(){ modalBackdrop.style.display = 'none'; }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    openPrizeBtn.addEventListener('click', ()=>{
+      if(PRIZE_LINK){
+        window.open(PRIZE_LINK, '_blank');
+      } else {
+        alert('Prize link not set. Paste it in the settings field and press Save.');
       }
-    })
-  );
-}
+    });
 
-function draw() {
-  ctx.fillStyle = "#071129";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  drawMatrix(arena, { x: 0, y: 0 });
-  drawMatrix(player.matrix, player.pos);
-}
+    // Game state
+    let grid = createMatrix(cols, rows);
+    let current = null;
+    let next = null;
+    let dropCounter = 0;
+    let dropInterval = 800; // ms
+    let lastTime = 0;
+    let score = 0;
+    let lines = 0;
+    let level = 1;
+    let running = false;
 
-function arenaSweep() {
-  let cleared = 0;
-  outer: for (let y = arena.length - 1; y >= 0; y--) {
-    if (arena[y].every(v => v !== 0)) {
-      arena.splice(y, 1);
-      arena.unshift(new Array(cols).fill(0));
-      cleared++;
-      y++;
+    function createMatrix(w,h){
+      const m = [];
+      for(let y=0;y<h;y++){
+        m.push(new Array(w).fill(0));
+      }
+      return m;
     }
-  }
-  return cleared;
-}
 
-function drop() {
-  player.pos.y++;
-  if (collide(arena, player)) {
-    player.pos.y--;
-    merge(arena, player);
-    const cleared = arenaSweep();
-    if (cleared > 0) {
-      lines += cleared;
-      score += cleared * 100;
-      level = 1 + Math.floor(lines / 10);
+    const tetrominoes = {
+      I: [[1,1,1,1]],
+      J: [[2,0,0],[2,2,2]],
+      L: [[0,0,3],[3,3,3]],
+      O: [[4,4],[4,4]],
+      S: [[0,5,5],[5,5,0]],
+      T: [[0,6,0],[6,6,6]],
+      Z: [[7,7,0],[0,7,7]]
+    };
+
+    const colors = [null,'#00f0f0','#0000f0','#f0a000','#f0f000','#00f000','#a000f0','#f00000'];
+
+    function createPiece(type){
+      return tetrominoes[type].map(row=>row.slice());
+    }
+
+    function collide(grid, piece, offset){
+      for(let y=0;y<piece.length;y++){
+        for(let x=0;x<piece[y].length;x++){
+          if(piece[y][x]!==0 && (grid[y+offset.y] && grid[y+offset.y][x+offset.x])!==0) return true;
+        }
+      }
+      return false;
+    }
+
+    function merge(grid,piece,offset){
+      for(let y=0;y<piece.length;y++){
+        for(let x=0;x<piece[y].length;x++){
+          if(piece[y][x]) grid[y+offset.y][x+offset.x]=piece[y][x];
+        }
+      }
+    }
+
+    function rotate(matrix,dir){
+      for(let y=0;y<matrix.length;y++){
+        for(let x=0;x<y;x++){
+          [matrix[x][y],matrix[y][x]]=[matrix[y][x],matrix[x][y]];
+        }
+      }
+      if(dir>0) matrix.forEach(row=>row.reverse()); else matrix.reverse();
+    }
+
+    function playerDrop(){
+      current.pos.y++;
+      if(collide(grid,current.matrix,current.pos)){
+        current.pos.y--;
+        merge(grid,current.matrix,current.pos);
+        sweepLines();
+        spawnPiece();
+        if(collide(grid,current.matrix,current.pos)){
+          // game over
+          running=false;
+          statusEl.textContent='Game Over';
+        }
+      }
+      dropCounter=0;
+    }
+
+    function playerMove(dir){
+      current.pos.x+=dir;
+      if(collide(grid,current.matrix,current.pos)) current.pos.x-=dir;
+    }
+
+    function playerRotate(dir){
+      const posX = current.pos.x;
+      rotate(current.matrix,dir);
+      let offset=1;
+      while(collide(grid,current.matrix,current.pos)){
+        current.pos.x+=offset;
+        offset = -(offset + (offset>0?1:-1));
+        if(offset>current.matrix[0].length){ rotate(current.matrix,-dir); current.pos.x=posX; return; }
+      }
+    }
+
+    function sweepLines(){
+      let rowCount=0;
+      outer: for(let y=grid.length-1;y>=0;y--){
+        for(let x=0;x<grid[y].length;x++){
+          if(!grid[y][x]) continue outer;
+        }
+        const row = grid.splice(y,1)[0].fill(0);
+        grid.unshift(row);
+        y++; // re-check this row index after unshift
+        rowCount++;
+      }
+      if(rowCount>0){
+        lines+=rowCount;
+        score += (rowCount*100) * rowCount; // bumped scoring
+        if(lines>=WIN_LINES && running){
+          // player wins
+          running=false;
+          statusEl.textContent='You Win!';
+          showModal();
+        }
+        // level up every 10 lines
+        const newLevel = Math.floor(lines/10)+1;
+        if(newLevel>level){ level=newLevel; dropInterval=Math.max(100, dropInterval-100*(newLevel-level)); }
+        updateHUD();
+      }
+    }
+
+    function spawnPiece(){
+      const types = 'IJLOSTZ';
+      const t = types[Math.floor(Math.random()*types.length)];
+      current = {
+        matrix:createPiece(t),
+        pos:{x:Math.floor((cols - tetrominoes[t][0].length)/2), y:0}
+      };
+    }
+
+    function hardDrop(){
+      while(!collide(grid,current.matrix,{x:current.pos.x,y:current.pos.y+1})) current.pos.y++;
+      playerDrop();
+    }
+
+    function updateHUD(){
+      scoreEl.textContent = score;
+      linesEl.textContent = lines;
+      levelEl.textContent = level;
+    }
+
+    function draw(){
+      ctx.fillStyle = '#071129';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      // draw grid
+      for(let y=0;y<rows;y++){
+        for(let x=0;x<cols;x++){
+          const val = grid[y][x];
+          if(val){
+            ctx.fillStyle = colors[val];
+            ctx.fillRect(x*scale,y*scale,scale-1,scale-1);
+          }
+        }
+      }
+      // draw current piece
+      if(current){
+        for(let y=0;y<current.matrix.length;y++){
+          for(let x=0;x<current.matrix[y].length;x++){
+            const val = current.matrix[y][x];
+            if(val){
+              ctx.fillStyle = colors[val];
+              ctx.fillRect((current.pos.x+x)*scale,(current.pos.y+y)*scale,scale-1,scale-1);
+            }
+          }
+        }
+      }
+    }
+
+    function update(time=0){
+      if(!running) return;
+      const delta = time - lastTime;
+      lastTime = time;
+      dropCounter += delta;
+      if(dropCounter > dropInterval){
+        playerDrop();
+      }
+      draw();
+      requestAnimationFrame(update);
+    }
+
+    // input
+    document.addEventListener('keydown', e=>{
+      if(!running) return;
+      if(e.key === 'ArrowLeft') playerMove(-1);
+      if(e.key === 'ArrowRight') playerMove(1);
+      if(e.key === 'ArrowDown') playerDrop();
+      if(e.code === 'Space') { e.preventDefault(); hardDrop(); }
+      if(e.key === 'ArrowUp') playerRotate(1);
+      draw();
+    });
+
+    // controls
+    document.getElementById('startBtn').addEventListener('click', ()=>{
+      grid = createMatrix(cols, rows);
+      score = 0; lines = 0; level = 1; dropInterval=800;
       updateHUD();
-      if (lines >= WIN_LINES) openWinModal();
-    }
-    resetPiece();
-  }
-  dropCounter = 0;
-}
+      spawnPiece();
+      running = true;
+      statusEl.textContent='Playing';
+      lastTime = 0;
+      requestAnimationFrame(update);
+    });
+    document.getElementById('pauseBtn').addEventListener('click', ()=>{
+      running = !running;
+      statusEl.textContent = running ? 'Playing' : 'Paused';
+      if(running) requestAnimationFrame(update);
+    });
 
-function resetPiece() {
-  const types = "TOLJISZ";
-  const type = types[(types.length * Math.random()) | 0];
-  player.matrix = pieces[type];
-  player.pos.y = 0;
-  player.pos.x = ((cols / 2) | 0) - ((player.matrix[0].length / 2) | 0);
-  if (collide(arena, player)) {
-    arena.forEach(row => row.fill(0));
-    score = 0; lines = 0; level = 1;
-    updateHUD();
-  }
-}
+    // initialize
+    (function init(){
+      spawnPiece();
+      updateHUD();
+      statusEl.textContent='Ready';
+    })();
 
-let dropCounter = 0;
-let lastTime = 0;
-
-function update(t = 0) {
-  const dt = t - lastTime;
-  lastTime = t;
-  dropCounter += dt;
-  if (dropCounter > 1000 - level * 50) drop();
-  draw();
-  requestAnimationFrame(update);
-}
-
-// ==== PLAYER ====
-
-const player = {
-  pos: { x: 0, y: 0 },
-  matrix: null,
-};
-
-let score = 0;
-let lines = 0;
-let level = 1;
-
-// ==== HUD ====
-
-function updateHUD() {
-  document.getElementById("score").textContent = score;
-  document.getElementById("lines").textContent = lines;
-  document.getElementById("level").textContent = level;
-}
-
-// ==== INPUT ====
-
-document.addEventListener("keydown", e => {
-  if (e.key === "ArrowLeft") {
-    player.pos.x--;
-    if (collide(arena, player)) player.pos.x++;
-  }
-  if (e.key === "ArrowRight") {
-    player.pos.x++;
-    if (collide(arena, player)) player.pos.x--;
-  }
-  if (e.key === "ArrowDown") drop();
-  if (e.key === "ArrowUp") {
-    const rotated = rotate(player.matrix);
-    const prev = player.matrix;
-    player.matrix = rotated;
-    if (collide(arena, player)) player.matrix = prev;
-  }
-  if (e.key === " ") {
-    while (!collide(arena, player)) player.pos.y++;
-    player.pos.y--;
-    drop();
-  }
-});
-
-// ==== BUTTONS ====
-
-document.getElementById("startBtn").onclick = () => {
-  arena.forEach(row => row.fill(0));
-  score = 0; lines = 0; level = 1;
-  updateHUD();
-  resetPiece();
-  document.getElementById("status").textContent = "Playing";
-};
-
-document.getElementById("pauseBtn").onclick = () => {
-  paused = !paused;
-  document.getElementById("status").textContent = paused ? "Paused" : "Playing";
-};
-
-let paused = false;
-function updateLoop(t) {
-  if (!paused) update(t);
-  else requestAnimationFrame(updateLoop);
-}
-requestAnimationFrame(updateLoop);
-
-// ==== PRIZE ====
-
-document.getElementById("savePrize").onclick = () => {
-  PRIZE_LINK = document.getElementById("prizeInput").value.trim();
-  alert("Prize link saved!");
-};
-
-function openWinModal() {
-  document.getElementById("modal").style.display = "flex";
-}
-
-document.getElementById("openPrize").onclick = () => {
-  if (!PRIZE_LINK) return alert("No prize link set.");
-  window.open(PRIZE_LINK, "_blank");
-};
-
-document.getElementById("closeModal").onclick = () => {
-  document.getElementById("modal").style.display = "none";
-};
-
-resetPiece();
-updateHUD();
-</script>
+    // handy: let user set PRIZE_LINK by editing input and clicking Save, or by editing the variable in the file.
+  </script>
 </body>
 </html>
+
