@@ -23,24 +23,32 @@
     .screen { display: none; }
     .screen.active { display: block; }
 
-    button {
-      margin: 10px 0;
-      padding: 15px;
-      font-size: 16px;
-      width: 100%;
-      max-width: 400px;
-      cursor: pointer;
-      border-radius: 12px;
-      border: none;
-    }
+<style>
+  button {
+    margin: 10px 0;
+    padding: 15px;
+    font-size: 16px;
+    width: 100%;
+    max-width: 400px;
+    cursor: pointer;
+    border-radius: 12px;
+    border: none;
+    color: white;           /* White text */
+    background-color: #007BFF; /* Optional: blue background */
+  }
 
-    iframe {
-      width: 100%;
-      max-width: 560px;
-      height: 315px;
-      border: none;
-    }
-  </style>
+  button:hover {
+    background-color: #0056b3; /* Slightly darker on hover */
+  }
+
+  iframe {
+    width: 100%;
+    max-width: 560px;
+    height: 315px;
+    border: none;
+  }
+</style>
+
 </head>
 <body>
 
