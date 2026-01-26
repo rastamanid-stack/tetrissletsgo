@@ -35,27 +35,39 @@
       cursor: pointer;
       font-size: 20px;
       font-weight: bold;
-      transition: transform 0.1s ease;
       user-select: none;
+      transition: transform 0.1s ease;
     }
 
     .book:active {
       transform: translate(4px, 4px);
       box-shadow: 4px 4px 0 #000;
     }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <div class="book" onclick="goToVideo()">
-      PRESS ME
-    </div>
+  <div class="container" id="container">
+    <div class="book" onclick="playVideo()">PRESS ME</div>
   </div>
 
   <script>
-    function goToVideo() {
-      window.location.href = "https://drive.google.com/uc?export=download&id=1wB4hRYje5XzrQJsCCbOGvDPzS2MaMIxW";
+    function playVideo() {
+      const container = document.getElementById("container");
+
+      container.innerHTML = `
+        <iframe 
+          src="https://drive.google.com/file/d/1wB4hRYje5XzrQJsCCbOGvDPzS2MaMIxW/preview?autoplay=1"
+          allow="autoplay; fullscreen"
+          allowfullscreen>
+        </iframe>
+      `;
     }
   </script>
 </body>
