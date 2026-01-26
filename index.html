@@ -1,92 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Go to Australia</title>
+  <meta charset="UTF-8">
+  <title>Press Me</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
-    body {
+    html, body {
       margin: 0;
-      height: 100vh;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
       display: flex;
-      justify-content: center;
       align-items: center;
-      background: #0b132b;
-      font-family: Arial, Helvetica, sans-serif;
-      color: white;
+      justify-content: center;
+      height: 100%;
     }
 
-    #container {
-      text-align: center;
-      transition: opacity 0.8s ease;
-    }
-
-    #box {
-      border: 2px solid white;
-      padding: 20px 40px;
-      border-radius: 12px;
+    .book {
+      width: 180px;
+      height: 120px;
+      background: #fff;
+      border: 3px solid #000;
+      border-radius: 8px;
+      box-shadow: 8px 8px 0 #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      display: inline-block;
-      transition: transform 0.2s ease, background 0.2s ease;
+      font-size: 20px;
+      font-weight: bold;
+      transition: transform 0.1s ease;
+      user-select: none;
     }
 
-    #box:hover {
-      transform: scale(1.05);
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    #videoWrapper {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: black;
-      display: none;
-      opacity: 0;
-      transition: opacity 1s ease;
-    }
-
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .book:active {
+      transform: translate(4px, 4px);
+      box-shadow: 4px 4px 0 #000;
     }
   </style>
 </head>
-<body>
-  <div id="container">
-    <div id="box" onclick="goToVideo()">
-      Please click here to go to Australia
-    </div>
-  </div>
 
-  <div id="videoWrapper">
-    <!-- Replace 'your-video.mp4' with your video file -->
-    <video id="australiaVideo" controls>
-      <source src="https://drive.google.com/file/d/1ckncGUpK6fE31ycYsvwXdtRgRMmDNxC1/view?usp=sharing" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
+<body>
+  <div class="container">
+    <div class="book" onclick="goToVideo()">
+      PRESS ME
+    </div>
   </div>
 
   <script>
     function goToVideo() {
-      const container = document.getElementById('container');
-      const wrapper = document.getElementById('videoWrapper');
-      const video = document.getElementById('australiaVideo');
-
-      // Fade out text box
-      container.style.opacity = '0';
-
-      setTimeout(() => {
-        container.style.display = 'none';
-        wrapper.style.display = 'block';
-        // Trigger fade-in
-        setTimeout(() => {
-          wrapper.style.opacity = '1';
-          video.play();
-        }, 50);
-      }, 800);
+      window.location.href = "https://drive.google.com/uc?export=download&id=1wB4hRYje5XzrQJsCCbOGvDPzS2MaMIxW";
     }
   </script>
 </body>
