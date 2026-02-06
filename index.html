@@ -65,4 +65,134 @@
     font-size: 18px;
     border: none;
     border-radius: 30px;
-    background: #ff4
+    background: #ff4b5c;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+  }
+
+  button:hover {
+    background: #ff2e44;
+    transform: scale(1.05);
+  }
+
+  .result {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  @media (max-width: 600px) {
+    canvas {
+      width: 300px;
+      height: 300px;
+    }
+  }
+</style>
+</head>
+
+<body>
+<div class="overlay">
+  <div class="container">
+
+    <h1>From My Heart</h1>
+
+    <p>
+      My heart have been longing for your smile, I am incredibly sorry for what I have not done right in the past and recently.
+      I do not wish to burry my wrong doing rather rise from it. I love you I am worried about you thou I will listen to you carefully.
+      This will be a game where one of my weaknesses will be tested since gifting is one of it, this will assure you for my love to you.
+      thou pathetic this is one of my ways to make you happy. I truly understand and sorry, I will become the better me.
+    </p>
+
+    <canvas id="wheel" width="400" height="400"></canvas>
+
+    <br>
+    <button onclick="spinWheel()">Spin the Wheel 💖</button>
+
+    <div class="result" id="result"></div>
+
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById("wheel");
+  const ctx = canvas.getContext("2d");
+
+  const options = [
+    "A Thoughtful Gift 🎁",
+    "A Long Honest Talk 💬",
+    "A Surprise Date 🌹",
+    "A Handwritten Letter ✍️",
+    "Your Favorite Treat 🍰",
+    "A Day Just for You ❤️"
+  ];
+
+  const colors = [
+    "#ffadad", "#ffd6a5", "#fdffb6",
+    "#caffbf", "#9bf6ff", "#bdb2ff"
+  ];
+
+  let startAngle = 0;
+  const arc = Math.PI * 2 / options.length;
+
+  function drawWheel() {
+    for (let i = 0; i < options.length; i++) {
+      const angle = startAngle + i * arc;
+      ctx.fillStyle = colors[i];
+      ctx.beginPath();
+      ctx.moveTo(200, 200);
+      ctx.arc(200, 200, 200, angle, angle + arc);
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(200, 200);
+      ctx.rotate(angle + arc / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#333";
+      ctx.font = "16px sans-serif";
+      ctx.fillText(options[i], 180, 10);
+      ctx.restore();
+    }
+  }
+
+  drawWheel();
+
+  function spinWheel() {
+    const spinAngle = Math.random() * 3000 + 2000;
+    const spinTime = 3000;
+    let start = null;
+
+    function animate(timestamp) {
+      if (!start) start = timestamp;
+      const progress = timestamp - start;
+      const angle = easeOut(progress, 0, spinAngle, spinTime);
+      startAngle = angle * Math.PI / 180;
+      ctx.clearRect(0, 0, 400, 400);
+      drawWheel();
+
+      if (progress < spinTime) {
+        requestAnimationFrame(animate);
+      } else {
+        showResult();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+
+  function showResult() {
+    const degrees = startAngle * 180 / Math.PI + 90;
+    const index = Math.floor((360 - degrees % 360) / (360 / options.length)) % options.length;
+    document.getElementById("result").innerText =
+      "It landed on: " + options[index];
+  }
+
+  function easeOut(t, b, c, d) {
+    t /= d;
+    t--;
+    return c * (t * t * t + 1) + b;
+  }
+</script>
+
+</body>
+</html>
+
