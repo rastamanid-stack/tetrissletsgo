@@ -1,79 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>For You ❤️</title>
+<meta charset="UTF-8">
+<title>For You ❤️</title>
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-    body {
-      height: 100vh;
-      font-family: 'Segoe UI', sans-serif;
-      background-image: url("assets/wallpaper.jpg");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
+  body {
+    height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    background-image: url("assets/wallpaper.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
 
-    /* Dark overlay for readability */
-    .overlay {
-      height: 100vh;
-      width: 100%;
-      background: rgba(0, 0, 0, 0.45);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 20px;
-    }
+  .overlay {
+    min-height: 100vh;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
 
-    .content {
-      max-width: 900px;
-      background: rgba(255, 255, 255, 0.08);
-      padding: 30px;
-      border-radius: 15px;
-      backdrop-filter: blur(6px);
-      color: #fff;
-      line-height: 1.7;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
+  .container {
+    max-width: 900px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(6px);
+    border-radius: 18px;
+    padding: 30px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
 
-    h1 {
-      font-size: 2.2rem;
-      margin-bottom: 20px;
-    }
+  h1 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+  }
 
-    p {
-      font-size: 1.05rem;
-    }
+  p {
+    line-height: 1.7;
+    margin-bottom: 25px;
+    font-size: 1rem;
+  }
 
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.6rem;
-      }
-      p {
-        font-size: 0.95rem;
-      }
-    }
-  </style>
-</head>
+  canvas {
+    margin-top: 20px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
 
-<body>
-  <div class="overlay">
-    <div class="content">
-      <h1>From My Heart</h1>
-      <p>
-        My heart have been longing for your smile, I am incredibly sorry for what I have not done right in the past and recently.
-        I do not wish to burry my wrong doing rather rise from it. I love you, I am worried about you though I will listen to you carefully.
-        This will be a game where one of my weaknesses will be tested since gifting is one of it, this will assure you for my love to you.
-        Though pathetic this is one of my ways to make you happy. I truly understand and sorry, I will become the better me.
-      </p>
-    </div>
-  </div>
-</body>
-</html>
+  button {
+    margin-top: 20px;
+    padding: 14px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 30px;
+    background: #ff4
