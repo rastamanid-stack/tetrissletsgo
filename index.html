@@ -2,81 +2,78 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Do You Love Me?</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>For You ❤️</title>
 
   <style>
-    body {
+    * {
       margin: 0;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-      background: url("A26A49AF-B7ED-492F-90DC-AA21A25BA693.jpeg") no-repeat center center/cover;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    .card {
-      background: rgba(0,0,0,0.6);
-      padding: 30px;
-      border-radius: 16px;
+    body {
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      background-image: url("assets/wallpaper.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    /* Dark overlay for readability */
+    .overlay {
+      height: 100vh;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      justify-content: center;
+      align-items: center;
       text-align: center;
-      color: white;
-      max-width: 320px;
-      width: 90%;
+      padding: 20px;
+    }
+
+    .content {
+      max-width: 900px;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 30px;
+      border-radius: 15px;
+      backdrop-filter: blur(6px);
+      color: #fff;
+      line-height: 1.7;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
     h1 {
+      font-size: 2.2rem;
       margin-bottom: 20px;
     }
 
-    button {
-      display: block;
-      width: 100%;
-      margin: 10px 0;
-      padding: 15px;
-      font-size: 18px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      background: white;
-      color: black;
-      font-weight: bold;
+    p {
+      font-size: 1.05rem;
     }
 
-    button:hover {
-      background: #ffb6c1;
-    }
-
-    iframe {
-      width: 100%;
-      height: 315px;
-      border: none;
-      margin-top: 20px;
-      border-radius: 12px;
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.6rem;
+      }
+      p {
+        font-size: 0.95rem;
+      }
     }
   </style>
 </head>
+
 <body>
-
-  <div class="card" id="questionBox">
-    <h1>Do you love me?? ❤️</h1>
-
-    <button onclick="playVideo('https://drive.google.com/file/d/1WWEd7A_Pyr6t3dGm50W96VBOWajwVOdM/view')">Yes</button>
-    <button onclick="playVideo('MAYBE_DRIVE_LINK')">Maybe</button>
-    <button onclick="playVideo('NO_DRIVE_LINK')">No</button>
+  <div class="overlay">
+    <div class="content">
+      <h1>From My Heart</h1>
+      <p>
+        My heart have been longing for your smile, I am incredibly sorry for what I have not done right in the past and recently.
+        I do not wish to burry my wrong doing rather rise from it. I love you, I am worried about you though I will listen to you carefully.
+        This will be a game where one of my weaknesses will be tested since gifting is one of it, this will assure you for my love to you.
+        Though pathetic this is one of my ways to make you happy. I truly understand and sorry, I will become the better me.
+      </p>
+    </div>
   </div>
-
-  <script>
-    function playVideo(link) {
-      document.getElementById("questionBox").innerHTML = `
-        <iframe 
-          src="${link.replace('/view', '/preview')}&autoplay=1" 
-          allow="autoplay">
-        </iframe>
-      `;
-    }
-  </script>
-
 </body>
 </html>
