@@ -66,9 +66,10 @@ button:hover{
   pointer-events:auto;
 }
 
-video{
+iframe{
   width:80%;
-  max-width:900px;
+  height:80%;
+  border:none;
   border-radius:20px;
 }
 </style>
@@ -82,10 +83,10 @@ video{
 </div>
 
 <div id="videoPage">
-  <!-- replace video.mp4 with your video later -->
-  <video id="vid" controls>
-    <source src="video" type="video/mp4">
-  </video>
+  <iframe
+    src="https://drive.google.com/file/d/17I_nnKt6XHNS8JQy91gFflG69VHD1dTK/preview"
+    allow="autoplay">
+  </iframe>
 </div>
 
 <script>
@@ -116,7 +117,6 @@ function showVideo(){
   document.getElementById("container").style.transform="scale(.8)";
   setTimeout(()=>{
     document.getElementById("videoPage").classList.add("show");
-    document.getElementById("vid").play();
   },800);
 }
 </script>
