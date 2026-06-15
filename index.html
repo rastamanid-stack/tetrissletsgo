@@ -1,125 +1,106 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta charset="UTF-8">
-<title>Our Time</title>
+<script src="https://kit.fontawesome.com/a14ae32021.js" crossorigin="anonymous"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>This one is for my Varchhu</title>
 
-<style>
-body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:#111;
-  font-family:Arial, Helvetica, sans-serif;
-  color:white;
-  overflow:hidden;
-}
-
-#container{
-  text-align:center;
-  transition:opacity 1s ease, transform 1s ease;
-}
-
-#title{
-  font-size:1.5em;
-  margin-bottom:15px;
-  opacity:.8;
-}
-
-#timer{
-  font-size:3em;
-  margin-bottom:30px;
-}
-
-button{
-  padding:15px 40px;
-  font-size:20px;
-  border:none;
-  border-radius:15px;
-  cursor:pointer;
-  background:#ff4d6d;
-  color:white;
-  transition:.3s;
-}
-
-button:hover{
-  transform:scale(1.1);
-  background:#ff2e55;
-}
-
-#videoPage{
-  position:absolute;
-  inset:0;
-  background:black;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity 1.2s ease;
-}
-
-#videoPage.show{
-  opacity:1;
-  pointer-events:auto;
-}
-
-iframe{
-  width:80%;
-  height:80%;
-  border:none;
-  border-radius:20px;
+<style type="text/css">
+@font-face {
+	font-family: digit;
+	src: url('digital-7_mono.ttf') format("truetype");
 }
 </style>
+<link href="css/default.css" type="text/css" rel="stylesheet">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/garden.js"></script>
+<script type="text/javascript" src="js/functions.js"></script>
+
 </head>
+
 <body>
 
-<div id="container">
-  <div id="title">We've been together for</div>
-  <div id="timer">Loading...</div>
-  <button onclick="showVideo()">Press Me ❤️</button>
+<div id="mainDiv">
+	<div id="content">
+		<div id="code">
+			<span class="comments">/**</span><br />
+			<span class="space"/><span class="comments">*THE CODE OF LOVE</span><br />
+			<span class="space"/><span class="comments">*/</span><br />
+			Hey Girl !<br />
+			Do you remember the day we first met?<br />
+			<span class="comments">// The ET-LAB Friday. </span><br />
+			Since that day a spark begun;<br />
+			<span class="comments">// Your face Your Voice Your Words.</span><br />
+			Your everything got imprinted in my heart;<br />
+			As the time went on;<br />
+			The Bond grew stronger and stronger;<br />
+			Journey from Infatuation to Love;<br />
+			We have traveled a long way together;<br />
+			There have been fights ;<br />
+			<span class="comments">// And I'm sure there will be more.</span><br />
+			But our Bond will always grow back Stronger;<br />
+			<br>
+			<br>
+			All I want to say is:<br />
+			Baby, I will love you forever;<br />
+			<br>
+			<br>
+			Now I am sorry and I want to say I should not behave that way every again<br />
+			<br>
+			<span id="heartspan">
+			<a href="image.jpg"><i class="fas fa-heart" id="icon"></i></a>
+			</span>
+		</div>
+		<div id="loveHeart">
+			<canvas id="garden"></canvas>
+			<div id="words">
+				<div id="messages">
+					FOREVER
+					<div id="elapseClock"></div>
+				</div>
+				<div id="loveu">
+					I LOVE YOU SO MUCH<br/>
+					<div class="signature">- RITVIK</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
-<div id="videoPage">
-  <iframe
-    src="https://drive.google.com/file/d/17I_nnKt6XHNS8JQy91gFflG69VHD1dTK/preview"
-    allow="autoplay">
-  </iframe>
-</div>
+<script type="text/javascript">
+var offsetX = $("#loveHeart").width() / 2;
+var offsetY = $("#loveHeart").height() / 2 - 55;
+var together = new Date();
+together.setFullYear(2019, 4, 19);
+together.setHours(16);
+together.setMinutes(30);
+together.setSeconds(0);
+together.setMilliseconds(0);
 
-<script>
-const startDate = new Date("April 11, 2019 00:00:00").getTime();
-const timerEl = document.getElementById("timer");
+if (!document.createElement('canvas').getContext) {
+	var msg = document.createElement("div");
+	msg.id = "errorMsg";
+	msg.innerHTML = "Your browser doesn't support HTML5!<br/>Recommend use Chrome 14+/IE 9+/Firefox 7+/Safari 4+"; 
+	document.body.appendChild(msg);
+	$("#code").css("display", "none")
+	$("#copyright").css("position", "absolute");
+	$("#copyright").css("bottom", "10px");
+	document.execCommand("stop");
+} else {
+	setTimeout(function () {
+		startHeartAnimation();
+	}, 5000);
 
-function updateTimer(){
-  const now = new Date().getTime();
-  const diff = now - startDate;
+	timeElapse(together);
+	setInterval(function () {
+		timeElapse(together);
+	}, 500);
 
-  const days = Math.floor(diff/(1000*60*60*24));
-  const hours = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-  const mins = Math.floor((diff%(1000*60*60))/(1000*60));
-  const secs = Math.floor((diff%(1000*60))/1000);
-
-  timerEl.innerHTML =
-    days+"d "+
-    hours+"h "+
-    mins+"m "+
-    secs+"s";
-}
-
-setInterval(updateTimer,1000);
-updateTimer();
-
-function showVideo(){
-  document.getElementById("container").style.opacity="0";
-  document.getElementById("container").style.transform="scale(.8)";
-  setTimeout(()=>{
-    document.getElementById("videoPage").classList.add("show");
-  },800);
+	adjustCodePosition();
+	$("#code").typewriter();
 }
 </script>
-
 </body>
 </html>
+
+        
